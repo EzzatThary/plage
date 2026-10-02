@@ -13,7 +13,7 @@ class PostController extends Controller
      */
     public function index()
     {
-         $posts = Post::all();
+        $posts = Post::all();
         return view('admin.posts.index', compact('posts'));
     }
 
@@ -30,18 +30,30 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate and store the post
-        // For now, just return a success message
-        return redirect()->route('posts.index')->with('success', 'Post created successfully!');
-    }
+        $request->validate([
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'content' => ['required', 'string', 'min:3'],
+            'user_name' => ['required', 'string', 'min:3', 'max:255'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+        ]);
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $path = $file->store('posts', 'public');
+        }
 
-    /**
-     * Display the specified resource.
-     */
+        Post::create([
+            'title' => $request->title,
+            'content' => $request->content,
+            'user_name' => $request->user_name,
+            'image' => $path,
+        ]);
+
+        return redirect()->route('posts.index');
+    }
     public function show(string $id)
     {
         $post = Post::where('id', '=', $id)->first();
-        return view('admin.posts.show',compact('post'));
+        return view('admin.posts.show', compact('post'));
     }
 
     /**

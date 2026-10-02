@@ -19,4 +19,4 @@ Route::get('/post', [HomeControler::class, 'post'])->name('post');
 
 
 
-include __DIR__.'/admin.php';
+include __DIR__ . '/admin.php';

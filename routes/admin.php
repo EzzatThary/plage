@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::get('/dashboard',[AdminController::class,'index'])->name('admin.index');
+Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.index');
 
 
-Route::resource('posts',PostController::class);
+Route::resource('posts', PostController::class);
 
 
 
