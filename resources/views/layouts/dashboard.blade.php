@@ -12,7 +12,7 @@
     <title>@yield('title', 'PLAGE|ADMIN')</title>
 
     <!-- Custom fonts for this template-->
-    <link href={{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}rel="stylesheet" type="text/css">
+    <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
@@ -57,7 +57,12 @@
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Posts</span></a>
             </li>
-
+            <hr class="sidebar-divider">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('users.index') }}">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Users </span></a>
+            </li>
             <!-- Nav Item - Pages Collapse Menu -->
             {{-- <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
@@ -231,7 +236,8 @@
                                     </div>
                                     <div>
                                         <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
+                                        <span class="font-weight-bold">A new monthly report is ready to
+                                            download!</span>
                                     </div>
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">

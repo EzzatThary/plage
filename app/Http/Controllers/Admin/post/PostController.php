@@ -5,15 +5,19 @@ namespace App\Http\Controllers\Admin\post;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $posts = Post::all();
+        $search= $request->query('search');
+        $posts = Post::where('title', 'like', "%{$search}%")
+        ->latest('id')
+        ->paginate(15);
         return view('admin.posts.index', compact('posts'));
     }
 
@@ -39,29 +43,35 @@ class PostController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('posts', 'public');
+            Post::create([
+                'title' => $request->title,
+                'content' => $request->content,
+                'user_name' => $request->user_name,
+                'image' => $path,
+            ]);
+        } else {
+            Post::create([
+                'title' => $request->title,
+                'content' => $request->content,
+                'user_name' => $request->user_name,
+            ]);
         }
-
-        Post::create([
-            'title' => $request->title,
-            'content' => $request->content,
-            'user_name' => $request->user_name,
-            'image' => $path,
-        ]);
 
         return redirect()->route('posts.index');
     }
     public function show(string $id)
     {
-        $post = Post::where('id', '=', $id)->first();
+        $post = Post::findOrFail($id)->first();
         return view('admin.posts.show', compact('post'));
     }
+
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
-        $post = Post::where('id', '=', $id)->first();
+        $post = Post::findOrFail($id);
         return view('admin.posts.edit', ['post' => $post]);
     }
 
@@ -70,9 +80,36 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Validate and update the post
-        // For now, just return a success message
-        return redirect()->route('posts.index')->with('success', 'Post updated successfully!');
+        $post=Post::findOrFail($id);
+        $request->validate([
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'content' => ['required', 'string', 'min:3'],
+            'user_name' => ['required', 'string', 'min:3', 'max:255'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+        ]);
+        $oldimage = Post::findOrFail($id)->image;
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $path = $file->store('posts', 'public');
+            $post->update([
+                'title' => $request->title,
+                'content' => $request->content,
+                'user_name' => $request->user_name,
+                'image' => $path,
+            ]);
+            if ($oldimage && Storage::disk('public')->exists($oldimage)) {
+                Storage::disk('public')->delete($oldimage);
+            }
+        } else {
+            $post->update([
+                'title' => $request->title,
+                'content' => $request->content,
+                'user_name' => $request->user_name,
+                'image' => $oldimage,
+            ]);
+        }
+
+        return redirect()->route('posts.index');
     }
 
     /**
@@ -80,8 +117,14 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        // Validate and delete the post
-        // For now, just return a success message
-        return redirect()->route('posts.index')->with('success', 'Post deleted successfully!');
+        $post = Post::findOrFail($id);
+        $post->delete();
+        if ($post->image && Storage::disk('public')->exists($post->image)) {
+            Storage::disk('public')->delete($post->image);
+        }
+
+
+
+        return redirect()->route('posts.index');
     }
 }

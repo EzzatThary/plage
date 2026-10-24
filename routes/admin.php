@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\post\PostController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -12,6 +13,7 @@ Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.index')
 
 
 Route::resource('posts', PostController::class);
+Route::resource('users', UserController::class);
 
 
 
