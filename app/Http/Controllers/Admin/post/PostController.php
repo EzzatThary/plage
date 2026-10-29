@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\post;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -15,9 +16,10 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $search= $request->query('search');
-        $posts = Post::where('title', 'like', "%{$search}%")
-        ->latest('id')
-        ->paginate(15);
+        $posts = Post::with('user')
+            ->where('title', 'like', "%{$search}%")
+            ->latest('id')
+            ->paginate(15);
         return view('admin.posts.index', compact('posts'));
     }
 
@@ -26,7 +28,8 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view('admin.posts.create');
+        $users=User::all(['id', 'name']);
+        return view('admin.posts.create', compact('users'));
     }
 
     /**
@@ -37,25 +40,21 @@ class PostController extends Controller
         $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'content' => ['required', 'string', 'min:3'],
-            'user_name' => ['required', 'string', 'min:3', 'max:255'],
+            'user_id' => ['required',  'exists:users,id'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ]);
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('posts', 'public');
-            Post::create([
-                'title' => $request->title,
-                'content' => $request->content,
-                'user_name' => $request->user_name,
-                'image' => $path,
-            ]);
-        } else {
-            Post::create([
-                'title' => $request->title,
-                'content' => $request->content,
-                'user_name' => $request->user_name,
-            ]);
+
         }
+            Post::create([
+                'title' => $request->title,
+                'content' => $request->content,
+                'user_id' => $request->user_id,
+                'image' => $path ?? null,
+            ]);
+
 
         return redirect()->route('posts.index');
     }
@@ -84,19 +83,14 @@ class PostController extends Controller
         $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'content' => ['required', 'string', 'min:3'],
-            'user_name' => ['required', 'string', 'min:3', 'max:255'],
+            'user_id' => ['required', 'exists:users,id'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ]);
         $oldimage = Post::findOrFail($id)->image;
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('posts', 'public');
-            $post->update([
-                'title' => $request->title,
-                'content' => $request->content,
-                'user_name' => $request->user_name,
-                'image' => $path,
-            ]);
+
             if ($oldimage && Storage::disk('public')->exists($oldimage)) {
                 Storage::disk('public')->delete($oldimage);
             }
@@ -104,8 +98,8 @@ class PostController extends Controller
             $post->update([
                 'title' => $request->title,
                 'content' => $request->content,
-                'user_name' => $request->user_name,
-                'image' => $oldimage,
+                'user_id' => $request->user_id,
+                'image' => $oldimage ?? null,
             ]);
         }
 

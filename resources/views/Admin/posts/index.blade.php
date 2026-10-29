@@ -77,7 +77,7 @@
                                         <td>{{ $post->id }}</td>
                                         <td>{{ $post->title }}</td>
                                         <td>{{ $post->content }}</td>
-                                        <td>{{ $post->user_name }}</td>
+                                        <td>{{ $post->user->name }}</td>
                                         <td><img src="{{ asset('storage/' . $post->image) }}" alt="Post Image"
                                                 width="50" height="50"></td>
                                         <td>{{ $post->created_at }}</td>

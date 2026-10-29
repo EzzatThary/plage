@@ -34,8 +34,13 @@
                     </div>
 
                     <div class="form-group">
-                        <input type="text" name="user_name" value="{{ old('user_name') }}"
-                            class="form-control form-control-user" aria-describedby="emailHelp" placeholder="Enter Author">
+                        <select name="user_id" class="form-control form-control-user">
+                            <option value="">Select User</option>
+                            @foreach ($users as $user)
+                                <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                                    {{ $user->name }}
+                                </option>
+                            @endforeach
                     </div>
                     <div class="form-group">
                         <input type="file" name="image" class="form-control form-control-user"
